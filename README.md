@@ -30,6 +30,7 @@ Both returned:
 ```
 10.10.34.36
 ```
+![Setup Diagram](images/diagram.png)
 
 That's a private IP range (`10.0.0.0/8`). It shouldn't show up as the answer for a public domain.
 
@@ -50,15 +51,16 @@ But the `Authority RRs` field was **0**, which I didn't expect. The IPv6 respons
 ```
 
 The tail (`10:10:34:36`) matches the IPv4 answer. That doesn't look like a coincidence.
+![Wireshark Capture](images/wireshark.png)
 
 I tested the IP directly — it didn't belong to `netflix.com`.
-
+![nslookup Result](images/nslookup.png)
 ---
 
 ## 🌍 External Verification
 
 To double-check, I used `dnschecker.org`. From outside my network, `netflix.com` resolved to its normal public IPs, completely different from what I got.
-
+![dnschecker.org Result](images/dnschecker.png)
 ---
 
 ## 📊 Observations

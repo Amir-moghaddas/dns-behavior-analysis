@@ -1,0 +1,18 @@
+Server:		8.8.8.8
+Address:	8.8.8.8#53
+
+Non-authoritative answer:
+Name:	netflix.com
+Address: 10.10.34.36
+Name:	netflix.com
+Address: 2001:4188:2:600:10:10:34:36
+
+Server:		1.1.1.1
+Address:	1.1.1.1#53
+
+Non-authoritative answer:
+Name:	netflix.com
+Address: 10.10.34.36
+Name:	netflix.com
+Address: 2001:4188:2:600:10:10:34:36
+

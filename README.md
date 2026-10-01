@@ -121,5 +121,5 @@ If DNS answers can be rewritten silently, any device that trusts DNS — sensors
 **Amir Moghaddas**
 Computer Engineering Student | IoT & Robotics Enthusiast
 
-- LinkedIn: [linkedin.com/in/amirmoghaddas](https://linkedin.com/in/amirmoghaddas)
+- LinkedIn: [linkedin.com/in/amir-moghaddas-027990388](https://www.linkedin.com/in/amir-moghaddas-027990388)
 - GitHub: [github.com/Amir-moghaddas](https://github.com/Amir-moghaddas)

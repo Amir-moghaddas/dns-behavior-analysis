@@ -1,127 +1,87 @@
-# 🌐 When DNS Packets Get Lost
+🌐 A Public Domain Resolved to a Private IP
 
-🔍 A technical analysis of unusual DNS resolution behavior observed in a restricted network environment.
+🔍 A technical analysis of unusual DNS resolution behavior observed during a networking exercise.
 
-![Status](https://img.shields.io/badge/Status-Complete-green)
-![Tools](https://img.shields.io/badge/Tools-Wireshark%20%7C%20nslookup-blue)
-![Focus](https://img.shields.io/badge/Focus-IoT%20%7C%20Network%20Security-orange)
+📋 Overview
 
----
+I was practicing network commands (nslookup, dig) as part of a networking course. At first everything looked normal. Then I tried a few other domains, netflix.com among them, just to see how resolution behaves.
+Before running nslookup, I opened Wireshark so I could watch the queries and responses.
+🔧 Method
 
-## 📋 Overview
-
-I was practicing network commands (`nslookup`, `dig`) as part of a networking course. At first everything looked normal. Then I tried a few other domains — `netflix.com` among them — just to see how resolution behaves.
-
-Before running `nslookup`, I opened Wireshark so I could watch the queries and responses.
-
----
-
-## 🔧 Method
-
-The course usually says to use `8.8.8.8` or `1.1.1.1` for reliability, so I queried `netflix.com` against both:
-
-```bash
+The setup is simple:
+I queried netflix.com against two well-known public resolvers:
 nslookup netflix.com 8.8.8.8
 nslookup netflix.com 1.1.1.1
-```
 
 Both returned:
-
-```
 10.10.34.36
-```
-![Setup Diagram](images/diagram.png)
+That is a private IP range (10.0.0.0/8, RFC 1918). It should not be the answer for a public domain.
+Extra test: an address with no real DNS server
 
-That's a private IP range (`10.0.0.0/8`). It shouldn't show up as the answer for a public domain.
+To check whether the answers really came from those resolvers, I queried 192.0.2.1. This address belongs to TEST-NET-1 (RFC 5737), a range reserved for documentation, so no real DNS server should exist there.
+nslookup netflix.com 192.0.2.1
+It answered anyway, with the same 10.10.34.36.
+🔍 Wireshark Analysis
 
----
+I captured the DNS traffic and filtered it with dns. The red box marks the queries sent to 192.0.2.1.
 
-## 🔍 Wireshark Analysis
-
-I went back to Wireshark and checked the packet details. Everything looked normal on the surface:
-
-- 1 answer
-- 0 packet loss
-- No retransmissions
-
-But the `Authority RRs` field was **0**, which I didn't expect. The IPv6 response was also odd:
-
-```
+The IPv6 response was also interesting:
 2001:4188:2:600:10:10:34:36
-```
+The tail (10:10:34:36) matches the IPv4 answer. That does not look like a coincidence.
 
-The tail (`10:10:34:36`) matches the IPv4 answer. That doesn't look like a coincidence.
-![Wireshark Capture](images/wireshark.png)
+Response times for the A query, as seen in my capture:
+Destination	Response time
+Destination	Response time
+8.8.8.8	~22 ms
+1.1.1.1	~3.7 ms
+192.0.2.1	~2.5 ms
+A server that should not exist answered about as fast as the real resolvers. I did not investigate timing further, so I treat this as an observation, not as proof.
+🌍 External Verification
 
-I tested the IP directly — it didn't belong to `netflix.com`.
-![nslookup Result](images/nslookup.png)
----
+To double-check, I used dnschecker.org. From other locations, netflix.com resolved to its normal public IPs, completely different from what I got.
+📊 Observations
+8.8.8.8 and 1.1.1.1 returned the same private IP.
+192.0.2.1, an address where no real DNS server should exist, also answered with the same private IP.
+The IPv6 response mirrored the IPv4 result.
+From other locations, the correct public IPs were returned.
 
-## 🌍 External Verification
+These observations suggest that something on the path between my machine and the destination is answering or altering DNS responses, regardless of the destination address. I did not identify what it is.
+❓ Open Questions
+What exactly answers these queries? A transparent DNS proxy, or something else?
+Would DNSSEC validation have detected this? (Not tested)
+Does the same happen for other domains?
+What would dig +trace show from this network? (Not tested)
+🤖 Why This Matters for IoT and Robotics
 
-To double-check, I used `dnschecker.org`. From outside my network, `netflix.com` resolved to its normal public IPs, completely different from what I got.
-![dnschecker.org Result](images/dnschecker.png)
----
+If DNS answers can be rewritten silently, any device that trusts DNS (sensors, robots, controllers) can be pointed at the wrong server. In a multi-robot setup, one wrong DNS answer could break coordination between nodes.
 
-## 📊 Observations
+Many IoT devices use plain, unauthenticated DNS and cannot easily switch to DoH, so DNS integrity is a safety concern, not just a networking one.
+🛠️ Environment
+Component	Details
+🖥️ Machine	Linux VM (VMware)
+🌐 Network	A network I was testing from
+🦈 Wireshark	4.x, capturing on VMware Network Adapter VMnet8
+🔍 nslookup	Built-in
+📡 dig	Not used
+📁 Files
+File	Description
+📄 nslookup.txt	Raw terminal output from the DNS queries
+📚 References
+RFC 1918: Address Allocation for Private Internets
+RFC 5737: IPv4 Address Blocks Reserved for Documentation
+RFC 4033: DNS Security Introduction and Requirements
+Wireshark Documentation
+dnschecker.org
+👤 Author
 
-- Both `8.8.8.8` and `1.1.1.1` returned the same private IP.
-- The IPv6 response mirrored the IPv4 result.
-- The `Authority RRs` field was zero.
-- From outside the network, the correct public IPs were returned.
+Amir Moghaddas Computer Engineering Student | IoT & Robotics Enthusiast
 
-These observations suggest that **something between the client and the resolver is shaping the DNS response** — possibly an intermediate network device or a transparent DNS proxy.
+LinkedIn: linkedin.com/in/amir-moghaddas-027990388
+GitHub: github.com/Amir-moghaddas
 
----
 
-## ❓ Open Questions
 
-- Why did both independent resolvers return the same private IP?
-- Is this a transparent DNS proxy or something else?
-- Would DNSSEC have caught this? (Not tested)
-- Does this happen on other domains too?
 
----
 
-## 🤖 Why This Matters for IoT and Robotics
 
-If DNS answers can be rewritten silently, any device that trusts DNS — sensors, robots, controllers — can be pointed at the wrong server. In a multi-robot setup, one wrong DNS answer could break coordination between nodes.
 
----
-
-## 🛠️ Environment
-
-| Component | Details |
-| :--- | :--- |
-| 🌐 Network | Restricted network with DNS interception |
-| 🦈 Wireshark | 4.x |
-| 🔍 nslookup | Built-in |
-| 📡 dig | Not used |
-
----
-
-## 📁 Files
-
-| File | Description |
-| :--- | :--- |
-| 📄 [nslookup.txt](outputs/nslookup.txt) | Raw terminal output from the DNS queries |
-| 📦 [capture.pcapng](outputs/capture.pcapng) | Full Wireshark packet capture |
-
----
-
-## 📚 References
-
-- RFC 1918 — Address Allocation for Private Internets
-- RFC 4033 — DNS Security Introduction and Requirements
-- Wireshark Documentation
-- dnschecker.org
-
----
-
-## 👤 Author
-
-**Amir Moghaddas**
-Computer Engineering Student | IoT & Robotics Enthusiast
-
-- LinkedIn: [linkedin.com/in/amir-moghaddas-027990388](https://www.linkedin.com/in/amir-moghaddas-027990388)
-- GitHub: [github.com/Amir-moghaddas](https://github.com/Amir-moghaddas)

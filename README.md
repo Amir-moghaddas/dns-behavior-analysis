@@ -1,3 +1,4 @@
+
 # 🌐 A Public Domain Resolved to a Private IP
 
 🔍 A technical analysis of unusual DNS resolution behavior observed during a networking exercise.
@@ -150,7 +151,6 @@ Computer Engineering Student | IoT & Robotics Enthusiast
 
 - LinkedIn: [linkedin.com/in/amir-moghaddas-027990388](https://www.linkedin.com/in/amir-moghaddas-027990388)
 - GitHub: [github.com/Amir-moghaddas](https://github.com/Amir-moghaddas)
-
 
 
 
